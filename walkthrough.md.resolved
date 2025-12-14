@@ -482,8 +482,143 @@ After fixing the Tailwind configuration, you can:
 1. **Add more pages** (Home, Transactions, Settings)
 2. **Add features** (Add Transaction, View Balance)
 3. **Add entities** (User data, Transaction data)
-4. **Connect to backend API** (using the URL in [variables.env.production](file:///c:/Projects/Finance-Tracker-fe/variables.env.production))
+4. **Connect to backend API** (using the API service layer - see below)
+
+---
+
+## 🌐 API Integration with Backend
+
+The project now includes a complete API service layer for connecting to your TaskManager backend API.
+
+### 📁 API Structure
+
+All API-related code lives in [src/shared/api/](file:///c:/Projects/Finance-Tracker-fe/src/shared/api):
+
+```
+src/shared/api/
+├── index.ts              # Barrel export
+├── types.ts              # TypeScript types/interfaces
+├── client.ts             # Axios instance & interceptors
+└── services/
+    └── workItems.service.ts  # Example service
+```
+
+### 🔧 How It Works
+
+#### 1. **Backend ResponseModel Mapping**
+
+Your C# backend returns:
+```csharp
+public class ResponseModel {
+    public bool IsSuccess { get; set; }
+    public object? Data { get; set; }
+    public string Message { get; set; }
+}
+```
+
+Frontend TypeScript equivalent:
+```typescript
+export interface ApiResponse<T = any> {
+  message: string;
+  isSuccess: boolean;
+  data: T | null;
+}
+```
+
+#### 2. **Using the API Service**
+
+Example with WorkItems:
+
+```typescript
+import { workItemsService } from '@shared/api';
+
+// Get all tasks from backend
+const tasks = await workItemsService.getAllTasks();
+
+// Get single task
+const task = await workItemsService.getTaskById(1);
+
+// Create new task
+const newTask = await workItemsService.createTask({
+  title: 'New Task',
+  description: 'Task description',
+  status: 'Pending',
+  priority: 'High'
+});
+```
+
+#### 3. **Example Component**
+
+See [TasksList.tsx](file:///c:/Projects/Finance-Tracker-fe/src/widgets/TasksList/TasksList.tsx) for a complete working example:
+
+```typescript
+const [tasks, setTasks] = useState<WorkItem[]>([]);
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const data = await workItemsService.getAllTasks();
+      setTasks(data);
+    } catch (error) {
+      console.error('Failed:', error);
+    }
+  };
+  fetchData();
+}, []);
+```
+
+### 🎯 Creating More Services
+
+To add services for other backend endpoints (transactions, users, etc.):
+
+1. **Add types** to [types.ts](file:///c:/Projects/Finance-Tracker-fe/src/shared/api/types.ts)
+2. **Create service file** following the pattern in [workItems.service.ts](file:///c:/Projects/Finance-Tracker-fe/src/shared/api/services/workItems.service.ts)
+3. **Export** in [index.ts](file:///c:/Projects/Finance-Tracker-fe/src/shared/api/index.ts)
+4. **Use** in your components
+
+See [API_INTEGRATION.md](file:///c:/Projects/Finance-Tracker-fe/API_INTEGRATION.md) for detailed instructions.
+
+### ⚙️ Configuration
+
+Update [.env](file:///c:/Projects/Finance-Tracker-fe/.env) with your backend URL:
+
+```env
+VITE_API_URL=http://localhost:5033/api
+```
+
+The API client automatically:
+- ✅ Adds authentication tokens from localStorage
+- ✅ Handles errors globally with interceptors
+- ✅ Validates ResponseModel success/failure
+- ✅ Provides TypeScript type safety
 
 ---
 
 *Remember: Building an app is like building with Legos - start with basic blocks, then add more pieces to make something awesome!* 🎉
+---
+## **Assistant Activity Log**
+
+- **Date:** 2025-12-14
+- **Actions performed in this session:**
+  - Created a short TODO plan using `manage_todo_list` to track steps.
+  - Read the existing `walkthrough.md.resolved` contents.
+  - Inspected repository changes and noted modified/created files.
+  - Prepared and appended this activity log to the walkthrough (also saved to `walkthrough.appended.md`).
+
+- **Files created or changed during this session (high-level):**
+  - `package.json`, `package-lock.json` (dependency updates)
+  - `.env` (VITE_API_URL)
+  - `API_INTEGRATION.md` (new integration guide)
+  - `src/shared/api/` - added `client.ts`, `index.ts`, `types.ts`, `services/workItems.service.ts`
+  - `src/widgets/TasksList/` - added `TasksList.tsx` and `index.ts`
+
+- **Notes:**
+  - The API client uses `VITE_API_URL` from `.env` and adds auth tokens from `localStorage`.
+  - `workItemsService` demonstrates common CRUD usage and `handleApiResponse` enforces backend `ResponseModel` semantics.
+
+If you'd like, I can:
+- run a quick `npm install` and start the dev server
+- open any of the new files for review
+- create a compact changelog entry or make a git commit
+
+---

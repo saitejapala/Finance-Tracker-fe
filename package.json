@@ -12,6 +12,7 @@
   "dependencies": {
     "@reduxjs/toolkit": "^2.11.1",
     "autoprefixer": "^10.4.22",
+    "axios": "^1.13.2",
     "clsx": "^2.1.1",
     "init": "^0.1.2",
     "lucide-react": "^0.561.0",
